@@ -114,7 +114,14 @@ export async function destroySession() {
   const sessionId = cookies().get("session_id")?.value;
 
   if (sessionId) {
+    // Delete the session from the database
     await query("DELETE FROM sessions WHERE id = ?", [sessionId]);
-    cookies().delete("session_id");
+
+    // Delete the cookie with proper options
+    cookies().delete("session_id", {
+      path: "/",
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+    });
   }
 }

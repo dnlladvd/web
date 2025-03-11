@@ -69,11 +69,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to logout");
+      }
+
       setUser(null);
       window.location.href = "/auth/login";
     } catch (error) {
       console.error("Failed to sign out:", error);
+      // Force redirect to login page even if the API call fails
+      setUser(null);
+      window.location.href = "/auth/login";
     }
   };
 
