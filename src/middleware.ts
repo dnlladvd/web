@@ -62,8 +62,7 @@ export async function middleware(request: NextRequest) {
     if (
       !request.nextUrl.pathname.startsWith("/auth/") &&
       !request.nextUrl.pathname.startsWith("/_next/") &&
-      !request.nextUrl.pathname.includes(".") &&
-      request.nextUrl.pathname !== "/"
+      !request.nextUrl.pathname.includes(".")
     ) {
       return NextResponse.redirect(new URL("/auth/login", request.url));
     }

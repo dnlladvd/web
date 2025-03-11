@@ -35,6 +35,17 @@ export async function initializeDatabase() {
       )
     `);
 
+    // Create sessions table
+    await query(`
+      CREATE TABLE IF NOT EXISTS sessions (
+        id VARCHAR(36) PRIMARY KEY,
+        user_id VARCHAR(36) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
     // Create categories table
     await query(`
       CREATE TABLE IF NOT EXISTS categories (

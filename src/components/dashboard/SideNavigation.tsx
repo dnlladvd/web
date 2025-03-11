@@ -13,7 +13,7 @@ import {
   HelpCircle,
   LogOut,
 } from "lucide-react";
-import { useAuth } from "../auth/auth-provider";
+import { useAuth } from "@/lib/auth/auth-context";
 
 interface SideNavigationProps {
   className?: string;
