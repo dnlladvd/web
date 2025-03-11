@@ -1,64 +1,85 @@
-import { query } from "@/lib/db/mysql";
+import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    const supabase = createClient();
+
     // Get total items count
-    const totalItemsResult = await query(
-      "SELECT COUNT(*) as count FROM inventory_items",
-      [],
-    );
-    const totalItems = (totalItemsResult as any[])[0].count;
+    const { data: totalItemsResult, error: totalError } = await supabase
+      .from("inventory_items")
+      .select("id", { count: "exact", head: true });
+
+    if (totalError) throw totalError;
+    const totalItems = totalItemsResult?.length || 0;
 
     // Get in stock items count
-    const inStockItemsResult = await query(
-      "SELECT COUNT(*) as count FROM inventory_items WHERE status = 'In Stock'",
-      [],
-    );
-    const inStockItems = (inStockItemsResult as any[])[0].count;
+    const { data: inStockItemsResult, error: inStockError } = await supabase
+      .from("inventory_items")
+      .select("id")
+      .eq("status", "In Stock");
+
+    if (inStockError) throw inStockError;
+    const inStockItems = inStockItemsResult?.length || 0;
 
     // Get low stock items count
-    const lowStockItemsResult = await query(
-      "SELECT COUNT(*) as count FROM inventory_items WHERE status = 'Low Stock'",
-      [],
-    );
-    const lowStockItems = (lowStockItemsResult as any[])[0].count;
+    const { data: lowStockItemsResult, error: lowStockError } = await supabase
+      .from("inventory_items")
+      .select("id")
+      .eq("status", "Low Stock");
+
+    if (lowStockError) throw lowStockError;
+    const lowStockItems = lowStockItemsResult?.length || 0;
 
     // Get out of stock items count
-    const outOfStockItemsResult = await query(
-      "SELECT COUNT(*) as count FROM inventory_items WHERE status = 'Out of Stock'",
-      [],
-    );
-    const outOfStockItems = (outOfStockItemsResult as any[])[0].count;
+    const { data: outOfStockItemsResult, error: outOfStockError } =
+      await supabase
+        .from("inventory_items")
+        .select("id")
+        .eq("status", "Out of Stock");
+
+    if (outOfStockError) throw outOfStockError;
+    const outOfStockItems = outOfStockItemsResult?.length || 0;
 
     // Get recent transactions
-    const recentTransactions = await query(
-      `SELECT t.*, i.name as item_name, i.unit, u.full_name as user_name
-       FROM inventory_transactions t
-       JOIN inventory_items i ON t.item_id = i.id
-       LEFT JOIN users u ON t.created_by = u.id
-       ORDER BY t.created_at DESC LIMIT 5`,
-      [],
-    );
+    const { data: recentTransactions, error: transactionsError } =
+      await supabase
+        .from("inventory_transactions")
+        .select(
+          `
+        *,
+        inventory_items!inner(name, unit),
+        users(full_name)
+      `,
+        )
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+    if (transactionsError) throw transactionsError;
 
     // Get low stock items
-    const lowStockItems = await query(
-      `SELECT i.*, c.name as category_name 
-       FROM inventory_items i
-       LEFT JOIN categories c ON i.category_id = c.id
-       WHERE i.quantity <= i.min_threshold AND i.quantity > 0
-       ORDER BY i.quantity / i.min_threshold ASC
-       LIMIT 5`,
-      [],
-    );
+    const { data: lowStockItemsList, error: lowStockItemsError } =
+      await supabase
+        .from("inventory_items")
+        .select(
+          `
+        *,
+        categories(name)
+      `,
+        )
+        .lt("quantity", supabase.rpc("get_min_threshold", { row_id: "id" }))
+        .gt("quantity", 0)
+        .limit(5);
+
+    if (lowStockItemsError) throw lowStockItemsError;
 
     return NextResponse.json({
       totalItems,
       inStockItems,
       lowStockItems,
       outOfStockItems,
-      recentTransactions,
-      lowStockItems,
+      recentTransactions: recentTransactions || [],
+      lowStockItems: lowStockItemsList || [],
     });
   } catch (error: any) {
     console.error("Error fetching dashboard summary:", error);

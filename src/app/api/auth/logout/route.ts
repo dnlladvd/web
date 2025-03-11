@@ -1,9 +1,14 @@
-import { destroySession } from "@/lib/auth/mysql-auth";
+import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function POST() {
   try {
-    await destroySession();
+    const supabase = createClient();
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      throw error;
+    }
 
     // Set headers to clear any client-side caching
     const headers = new Headers();

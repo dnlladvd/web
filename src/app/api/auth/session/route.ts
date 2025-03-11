@@ -1,15 +1,20 @@
-import { getUserFromSession } from "@/lib/auth/mysql-auth";
+import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const user = await getUserFromSession();
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (error) {
+      throw error;
+    }
+
+    if (!data.session) {
       return NextResponse.json({ user: null });
     }
 
-    return NextResponse.json({ user });
+    return NextResponse.json({ user: data.session.user });
   } catch (error: any) {
     console.error("Session error:", error);
     return NextResponse.json(

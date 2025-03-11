@@ -1,4 +1,4 @@
-import { createUser } from "@/lib/auth/mysql-auth";
+import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -12,9 +12,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = await createUser(email, password, fullName);
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName || null,
+        },
+      },
+    });
 
-    return NextResponse.json({ user }, { status: 201 });
+    if (error) {
+      throw error;
+    }
+
+    return NextResponse.json({ user: data.user }, { status: 201 });
   } catch (error: any) {
     console.error("Registration error:", error);
     return NextResponse.json(

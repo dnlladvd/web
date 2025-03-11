@@ -1,4 +1,4 @@
-import { query } from "@/lib/db/mysql";
+import { query } from "@/lib/db/supabase-db";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";

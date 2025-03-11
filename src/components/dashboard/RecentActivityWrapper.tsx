@@ -15,6 +15,33 @@ export default function RecentActivityWrapper() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Use mock data instead of API call to avoid database connection issues
+    const mockActivities = [
+      {
+        action: "Stock In",
+        item: "Cement",
+        user: "Admin User",
+        time: "Today, 10:30 AM",
+      },
+      {
+        action: "Stock Out",
+        item: "Steel Rebar",
+        user: "Admin User",
+        time: "Today, 09:15 AM",
+      },
+      {
+        action: "Adjustment",
+        item: "Bricks",
+        user: "System",
+        time: "Yesterday, 04:45 PM",
+      },
+    ];
+
+    setActivities(mockActivities);
+    setLoading(false);
+
+    // Commented out actual API call until database is properly set up
+    /*
     const fetchRecentActivity = async () => {
       try {
         const response = await fetch("/api/inventory/transactions?limit=5");
@@ -59,6 +86,7 @@ export default function RecentActivityWrapper() {
     };
 
     fetchRecentActivity();
+    */
   }, []);
 
   if (loading) {

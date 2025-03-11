@@ -1,4 +1,4 @@
-import { verifyCredentials, createSession } from "@/lib/auth/mysql-auth";
+import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -12,18 +12,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = await verifyCredentials(email, password);
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    if (!user) {
+    if (error) {
       return NextResponse.json(
-        { error: "Invalid email or password" },
+        { error: error.message || "Invalid email or password" },
         { status: 401 },
       );
     }
 
-    await createSession(user.id);
-
-    return NextResponse.json({ user });
+    return NextResponse.json({ user: data.user });
   } catch (error: any) {
     console.error("Login error:", error);
     return NextResponse.json(
