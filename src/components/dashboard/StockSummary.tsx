@@ -10,10 +10,10 @@ interface StockSummaryProps {
 }
 
 const StockSummary = ({
-  totalItems = 156,
-  inStockItems = 124,
-  lowStockItems = 18,
-  outOfStockItems = 14,
+  totalItems = 0,
+  inStockItems = 0,
+  lowStockItems = 0,
+  outOfStockItems = 0,
 }: StockSummaryProps) => {
   const summaryCards = [
     {

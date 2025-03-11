@@ -24,29 +24,8 @@ interface LowStockAlertsProps {
 }
 
 const LowStockAlerts = ({
-  items = [
-    {
-      id: "1",
-      name: "Cement",
-      currentStock: 5,
-      minThreshold: 20,
-      category: "Building Materials",
-    },
-    {
-      id: "2",
-      name: "Steel Rebar (10mm)",
-      currentStock: 8,
-      minThreshold: 30,
-      category: "Structural Materials",
-    },
-    {
-      id: "3",
-      name: "Plywood Sheets",
-      currentStock: 3,
-      minThreshold: 15,
-      category: "Wood Materials",
-    },
-  ],
+  items = [],
+
   onProcurementNavigate = () => console.log("Navigate to procurement"),
 }: LowStockAlertsProps) => {
   return (

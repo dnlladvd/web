@@ -1,7 +1,7 @@
 import React from "react";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import SideNavigation from "@/components/dashboard/SideNavigation";
-import InventoryTable from "@/components/dashboard/InventoryTable";
+import InventoryTableWrapper from "@/components/dashboard/InventoryTableWrapper";
 
 export default function InventoryPage() {
   return (
@@ -22,7 +22,7 @@ export default function InventoryPage() {
 
               {/* Inventory Table */}
               <section>
-                <InventoryTable />
+                <InventoryTableWrapper />
               </section>
             </div>
           </main>

@@ -21,11 +21,11 @@ export async function createUser(
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Create user with email_verified set to false
     const userId = uuidv4();
     await query(
-      "INSERT INTO users (id, email, password_hash, full_name) VALUES (?, ?, ?, ?)",
-      [userId, email, passwordHash, fullName || null],
+      "INSERT INTO users (id, email, password_hash, full_name, email_verified) VALUES (?, ?, ?, ?, ?)",
+      [userId, email, passwordHash, fullName || null, false],
     );
 
     return { id: userId, email, full_name: fullName };
@@ -47,6 +47,11 @@ export async function verifyCredentials(email: string, password: string) {
     const isValid = await bcrypt.compare(password, user.password_hash);
     if (!isValid) {
       return null;
+    }
+
+    // Check if email is verified
+    if (!user.email_verified) {
+      throw new Error("Email not verified. Please verify your email first.");
     }
 
     return {
@@ -123,5 +128,56 @@ export async function destroySession() {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
     });
+  }
+}
+
+// Generate a 6-digit OTP
+export function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Store OTP in database
+export async function storeOTP(email: string, otp: string) {
+  const id = uuidv4();
+  const expiresAt = new Date();
+  expiresAt.setMinutes(expiresAt.getMinutes() + 10); // OTP expires in 10 minutes
+
+  // Delete any existing OTPs for this email
+  await query("DELETE FROM email_verification WHERE email = ?", [email]);
+
+  // Store new OTP
+  await query(
+    "INSERT INTO email_verification (id, email, otp, expires_at) VALUES (?, ?, ?, ?)",
+    [id, email, otp, expiresAt],
+  );
+
+  return id;
+}
+
+// Verify email with OTP
+export async function verifyEmail(email: string, otp: string) {
+  try {
+    // Get OTP record
+    const records = await query(
+      "SELECT * FROM email_verification WHERE email = ? AND otp = ? AND expires_at > NOW()",
+      [email, otp],
+    );
+
+    if ((records as any[]).length === 0) {
+      return { success: false, message: "Invalid or expired OTP" };
+    }
+
+    // Mark email as verified
+    await query("UPDATE users SET email_verified = TRUE WHERE email = ?", [
+      email,
+    ]);
+
+    // Delete the OTP record
+    await query("DELETE FROM email_verification WHERE email = ?", [email]);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error verifying email:", error);
+    return { success: false, message: "Error verifying email" };
   }
 }

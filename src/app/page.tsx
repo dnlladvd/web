@@ -1,10 +1,10 @@
 import React from "react";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import StockSummary from "@/components/dashboard/StockSummary";
+import StockSummaryWrapper from "@/components/dashboard/StockSummaryWrapper";
 import LowStockAlertsWrapper from "@/components/dashboard/LowStockAlertsWrapper";
-import InventoryTable from "@/components/dashboard/InventoryTable";
+import InventoryTableWrapper from "@/components/dashboard/InventoryTableWrapper";
 import SideNavigation from "@/components/dashboard/SideNavigation";
-import RecentActivity from "@/components/dashboard/RecentActivity";
+import RecentActivityWrapper from "@/components/dashboard/RecentActivityWrapper";
 
 export default function Home() {
   return (
@@ -30,7 +30,7 @@ export default function Home() {
 
               {/* Stock Summary Cards */}
               <section className="mb-6">
-                <StockSummary />
+                <StockSummaryWrapper />
               </section>
 
               {/* Two Column Layout for Alerts and Recent Activity */}
@@ -42,13 +42,13 @@ export default function Home() {
 
                 {/* Recent Activity */}
                 <div className="lg:col-span-2">
-                  <RecentActivity />
+                  <RecentActivityWrapper />
                 </div>
               </div>
 
               {/* Inventory Table */}
               <section>
-                <InventoryTable />
+                <InventoryTableWrapper />
               </section>
             </div>
           </main>

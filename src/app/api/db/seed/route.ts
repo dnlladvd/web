@@ -11,8 +11,8 @@ export async function GET() {
     const passwordHash = await bcrypt.hash("admin123", salt);
 
     await query(
-      "INSERT INTO users (id, email, password_hash, full_name) VALUES (?, ?, ?, ?)",
-      [adminId, "admin@example.com", passwordHash, "Admin User"],
+      "INSERT INTO users (id, email, password_hash, full_name, email_verified) VALUES (?, ?, ?, ?, ?)",
+      [adminId, "admin@example.com", passwordHash, "Admin User", true],
     );
 
     // Create categories

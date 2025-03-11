@@ -90,19 +90,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
-      const response = await fetch("/api/auth/register", {
+      // Register the user
+      const registerResponse = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, fullName }),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
+      if (!registerResponse.ok) {
+        const error = await registerResponse.json();
         throw new Error(error.error || "Failed to sign up");
       }
 
-      // After successful registration, redirect to login
-      window.location.href = "/auth/login";
+      // Send OTP for verification
+      const otpResponse = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, fullName }),
+      });
+
+      if (!otpResponse.ok) {
+        const error = await otpResponse.json();
+        throw new Error(error.error || "Failed to send verification code");
+      }
+
+      // After successful registration, redirect to verification page
+      window.location.href = `/auth/verify?email=${encodeURIComponent(email)}`;
     } catch (error: any) {
       throw error;
     }

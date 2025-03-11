@@ -28,47 +28,47 @@ export default function VerifyPage() {
   const email = searchParams.get("email") || "";
   const supabase = createClient();
 
+  const handleResendCode = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to resend verification code");
+      }
+
+      // Show success message
+      alert("Verification code has been resent to your email");
+    } catch (error: any) {
+      setError(error.message || "Failed to resend verification code");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      // Get stored OTP and registration details
-      const storedOTP = sessionStorage.getItem("registration_otp");
-      const storedEmail = sessionStorage.getItem("registration_email");
-      const storedPassword = sessionStorage.getItem("registration_password");
-      const storedFullName = sessionStorage.getItem("registration_fullName");
-
-      // Verify OTP matches
-      if (!storedOTP || storedOTP !== otp) {
-        throw new Error("Invalid verification code");
-      }
-
-      if (email !== storedEmail) {
-        throw new Error("Email mismatch");
-      }
-
-      // Complete registration with Supabase
-      const { error } = await supabase.auth.signUp({
-        email: storedEmail,
-        password: storedPassword!,
-        options: {
-          data: {
-            full_name: storedFullName,
-          },
-        },
+      const response = await fetch("/api/auth/verify-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp }),
       });
 
-      if (error) {
-        throw error;
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to verify email");
       }
-
-      // Clear session storage
-      sessionStorage.removeItem("registration_otp");
-      sessionStorage.removeItem("registration_email");
-      sessionStorage.removeItem("registration_password");
-      sessionStorage.removeItem("registration_fullName");
 
       setSuccess(true);
       setTimeout(() => {
@@ -159,7 +159,8 @@ export default function VerifyPage() {
             <Button
               variant="link"
               className="p-0 h-auto"
-              onClick={() => router.refresh()}
+              onClick={handleResendCode}
+              disabled={loading}
             >
               Resend code
             </Button>
